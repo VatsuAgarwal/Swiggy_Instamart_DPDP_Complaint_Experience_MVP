@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Instamart Privacy Hub — Clickable Prototype</title>
+<style>
+  :root{
+    --navy:#1B1F3B; --navy2:#262C52; --orange:#FF6B35; --teal:#1F9D8A;
+    --slate:#5B6178; --card:#F5F6FA; --white:#FFFFFF; --purple:#8B5CF6;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family: -apple-system, "Segoe UI", Calibri, sans-serif;
+    background: radial-gradient(circle at 20% 20%, #262C52 0%, #14172c 60%, #0d0f1f 100%);
+    min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:40px 20px; gap:22px;
+  }
+  .label{
+    color:#8A8FB0; font-size:12px; letter-spacing:2px; text-transform:uppercase; text-align:center;
+  }
+  .label b{color:var(--orange);}
+  .phone{
+    width:375px; height:760px; background:var(--white); border-radius:44px;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.55), 0 0 0 10px #05060e;
+    overflow:hidden; position:relative; display:flex; flex-direction:column;
+  }
+  .notch{
+    position:absolute; top:0; left:50%; transform:translateX(-50%);
+    width:150px; height:26px; background:#05060e; border-radius:0 0 18px 18px; z-index:50;
+  }
+  .statusbar{ height:44px; flex-shrink:0; background:transparent; }
+  .screen{
+    flex:1; display:none; flex-direction:column; overflow-y:auto; -webkit-overflow-scrolling:touch;
+  }
+  .screen.active{ display:flex; }
+  .screen::-webkit-scrollbar{ display:none; }
+
+  /* Top bar within screens */
+  .topbar{ padding:8px 22px 14px; display:flex; align-items:center; gap:12px; flex-shrink:0; }
+  .backbtn{
+    width:34px; height:34px; border-radius:50%; background:var(--card); border:none;
+    display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:16px; color:var(--navy);
+  }
+  .topbar h1{ font-size:17px; color:var(--navy); font-weight:700; }
+
+  .content{ padding:0 22px 22px; flex:1; }
+
+  /* ---- Welcome screen ---- */
+  .welcome{ background:var(--navy); color:white; justify-content:center; align-items:center; text-align:center; padding:40px 32px; }
+  .welcome .icon-badge{
+    width:76px; height:76px; border-radius:50%; background:var(--navy2);
+    display:flex; align-items:center; justify-content:center; margin-bottom:22px; font-size:34px;
+  }
+  .welcome h2{ font-size:24px; font-weight:700; margin-bottom:10px; line-height:1.3; }
+  .welcome p{ font-size:13.5px; color:#C7CAE0; line-height:1.5; margin-bottom:28px; }
+  .welcome .badges{ display:flex; gap:8px; margin-bottom:32px; flex-wrap:wrap; justify-content:center; }
+  .badge{ background:var(--navy2); color:#C7CAE0; font-size:11px; padding:6px 12px; border-radius:20px; }
+
+  /* Buttons */
+  .btn{
+    display:block; width:100%; text-align:center; padding:15px; border-radius:14px; font-size:15px;
+    font-weight:700; border:none; cursor:pointer; transition:transform .08s ease;
+  }
+  .btn:active{ transform:scale(0.98); }
+  .btn-primary{ background:var(--orange); color:white; }
+  .btn-ghost{ background:transparent; color:#C7CAE0; border:1.5px solid #3A3F66; margin-top:10px; }
+  .btn-navy{ background:var(--navy); color:white; }
+  .btn-outline-navy{ background:white; color:var(--navy); border:1.5px solid var(--navy); margin-top:10px; }
+
+  /* ---- Consent category cards ---- */
+  .subtext{ font-size:12.5px; color:var(--slate); line-height:1.5; margin-bottom:18px; }
+  .cat-card{
+    background:var(--card); border-radius:16px; padding:16px; margin-bottom:12px;
+    display:flex; align-items:flex-start; gap:12px;
+  }
+  .cat-icon{
+    width:44px; height:44px; border-radius:50%; flex-shrink:0; display:flex; align-items:center;
+    justify-content:center; font-size:19px; color:white;
+  }
+  .cat-body{ flex:1; }
+  .cat-title{ font-size:14.5px; font-weight:700; color:var(--navy); margin-bottom:2px; }
+  .cat-desc{ font-size:11.5px; color:var(--slate); line-height:1.4; }
+  .cat-toggle{ flex-shrink:0; margin-top:2px; }
+
+  .switch{ position:relative; display:inline-block; width:44px; height:26px; flex-shrink:0; }
+  .switch input{ opacity:0; width:0; height:0; position:absolute; }
+  .slider{
+    position:absolute; cursor:pointer; inset:0; background:#D8DAE6; border-radius:26px;
+    border:1px solid #C7CAD9; transition:background .2s ease, border-color .2s ease, box-shadow .2s ease;
+  }
+  .slider:before{
+    content:""; position:absolute; height:20px; width:20px; left:2px; top:2px; background:white;
+    border-radius:50%; transition:transform .2s ease, box-shadow .2s ease; box-shadow:0 1px 3px rgba(0,0,0,0.25);
+  }
+  input:checked + .slider{
+    background:var(--teal); border-color:var(--teal);
+    box-shadow:inset 0 0 0 1px rgba(31,157,138,0.3);
+  }
+  input:checked + .slider:before{
+    transform:translateX(18px); box-shadow:0 1px 4px rgba(31,157,138,0.55);
+  }
+  input:active + .slider:before{ width:23px; } /* subtle squash on press */
+  input:disabled + .slider{ background:var(--navy); border-color:var(--navy); cursor:not-allowed; opacity:0.9; }
+
+  .locked-tag{ font-size:9.5px; color:var(--navy); font-weight:700; background:#E7E9F5; padding:3px 8px; border-radius:10px; }
+
+  /* ---- Dashboard ---- */
+  .stat-row{ display:flex; gap:10px; margin-bottom:16px; }
+  .stat{ flex:1; background:var(--card); border-radius:14px; padding:14px 12px; }
+  .stat .v{ font-size:20px; font-weight:800; color:var(--navy); }
+  .stat .l{ font-size:10px; color:var(--slate); margin-top:2px; }
+
+  .dash-row{
+    display:flex; align-items:center; justify-content:space-between; background:var(--card);
+    border-radius:14px; padding:14px 16px; margin-bottom:10px; cursor:pointer;
+  }
+  .dash-row-left{ display:flex; align-items:center; gap:12px; }
+  .dash-icon{ width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:17px; color:white; }
+  .dash-title{ font-size:13.5px; font-weight:700; color:var(--navy); }
+  .dash-sub{ font-size:10.5px; color:var(--slate); }
+  .chev{ color:#B7BACE; font-size:16px; }
+
+  /* ---- Data rights screen ---- */
+  .rights-card{ background:var(--card); border-radius:16px; padding:18px; margin-bottom:14px; }
+  .rights-card h3{ font-size:14px; color:var(--navy); margin-bottom:6px; }
+  .rights-card p{ font-size:11.5px; color:var(--slate); line-height:1.5; margin-bottom:12px; }
+
+  .danger-card{ background:#FCEFEA; border-radius:16px; padding:18px; }
+  .danger-card h3{ color:#C24C1C; }
+
+  /* ---- Confirmation ---- */
+  .confirm{ align-items:center; justify-content:center; text-align:center; padding:40px 32px; }
+  .confirm .check{
+    width:80px; height:80px; border-radius:50%; background:var(--teal); color:white; font-size:38px;
+    display:flex; align-items:center; justify-content:center; margin-bottom:22px;
+  }
+  .confirm h2{ font-size:20px; color:var(--navy); margin-bottom:8px; }
+  .confirm p{ font-size:13px; color:var(--slate); line-height:1.5; margin-bottom:26px; }
+
+  .footer-note{ font-size:10px; color:#B7BACE; text-align:center; margin-top:6px; }
+
+  .progress{ display:flex; gap:5px; padding:0 22px; margin-bottom:6px; }
+  .progress span{ flex:1; height:3px; border-radius:3px; background:#3A3F66; }
+  .progress span.done{ background:var(--orange); }
+
+  @media (max-width:420px){
+    .phone{ width:100%; max-width:375px; height:82vh; }
+  }
+</style>
+</head>
+<body>
+
+<div class="label">CLICKABLE PROTOTYPE · <b>Instamart Privacy Hub</b> · Happy Path</div>
+
+<div class="phone">
+  <div class="notch"></div>
+  <div class="statusbar"></div>
+
+  <!-- SCREEN 1: Welcome -->
+  <div class="screen welcome active" id="screen-welcome">
+    <div class="icon-badge">🔒</div>
+    <h2>We value your privacy</h2>
+    <p>Before you start ordering, choose how Instamart can use your data. You're always in control — change these anytime.</p>
+    <div class="badges">
+      <span class="badge">🔒 Essential</span>
+      <span class="badge">📈 Personalisation</span>
+      <span class="badge">📣 Marketing</span>
+      <span class="badge">🔗 Partner sharing</span>
+    </div>
+    <div style="width:100%">
+      <button class="btn btn-primary" onclick="go('screen-consent')">Customise my preferences</button>
+      <button class="btn btn-ghost" onclick="go('screen-consent')">Quick setup with recommended defaults</button>
+    </div>
+  </div>
+
+  <!-- SCREEN 2: Consent categories -->
+  <div class="screen" id="screen-consent">
+    <div class="topbar"><button class="backbtn" onclick="go('screen-welcome')">←</button><h1>Choose your preferences</h1></div>
+    <div class="content">
+      <div class="subtext">Each category controls a specific use of your data. Essential data keeps orders working and can't be switched off.</div>
+
+      <div class="cat-card">
+        <div class="cat-icon" style="background:var(--navy)">🔒</div>
+        <div class="cat-body">
+          <div class="cat-title">Essential</div>
+          <div class="cat-desc">Delivery address &amp; payment processing — required to place orders.</div>
+        </div>
+        <div class="cat-toggle"><span class="locked-tag">Always on</span></div>
+      </div>
+
+      <div class="cat-card">
+        <div class="cat-icon" style="background:var(--teal)">📈</div>
+        <div class="cat-body">
+          <div class="cat-title">Personalisation</div>
+          <div class="cat-desc">Purchase &amp; search history power your recommendations.</div>
+        </div>
+        <div class="cat-toggle">
+          <label class="switch"><input type="checkbox" id="t-personal" checked><span class="slider"></span></label>
+        </div>
+      </div>
+
+      <div class="cat-card">
+        <div class="cat-icon" style="background:var(--orange)">📣</div>
+        <div class="cat-body">
+          <div class="cat-title">Marketing</div>
+          <div class="cat-desc">Email, SMS, WhatsApp and push updates about offers.</div>
+        </div>
+        <div class="cat-toggle">
+          <label class="switch"><input type="checkbox" id="t-marketing"><span class="slider"></span></label>
+        </div>
+      </div>
+
+      <div class="cat-card">
+        <div class="cat-icon" style="background:var(--purple)">🔗</div>
+        <div class="cat-body">
+          <div class="cat-title">Partner sharing</div>
+          <div class="cat-desc">Anonymised insights shared with FMCG &amp; brand partners.</div>
+        </div>
+        <div class="cat-toggle">
+          <label class="switch"><input type="checkbox" id="t-partner"><span class="slider"></span></label>
+        </div>
+      </div>
+    </div>
+    <div class="content" style="padding-top:0">
+      <button class="btn btn-primary" onclick="go('screen-marketing')">Continue</button>
+    </div>
+  </div>
+
+  <!-- SCREEN 3: Marketing channel detail (toggle drill-down) -->
+  <div class="screen" id="screen-marketing">
+    <div class="topbar"><button class="backbtn" onclick="go('screen-consent')">←</button><h1>Marketing channels</h1></div>
+    <div class="content">
+      <div class="subtext">You can pick exactly which channels reach you — turning marketing on doesn't mean all of them.</div>
+      <div class="cat-card">
+        <div class="cat-icon" style="background:var(--orange)">✉️</div>
+        <div class="cat-body"><div class="cat-title">Email</div><div class="cat-desc">Offers &amp; order summaries</div></div>
+        <div class="cat-toggle"><label class="switch"><input type="checkbox" checked><span class="slider"></span></label></div>
+      </div>
+      <div class="cat-card">
+        <div class="cat-icon" style="background:var(--orange)">💬</div>
+        <div class="cat-body"><div class="cat-title">WhatsApp</div><div class="cat-desc">Order updates &amp; deals</div></div>
+        <div class="cat-toggle"><label class="switch"><input type="checkbox"><span class="slider"></span></label></div>
+      </div>
+      <div class="cat-card">
+        <div class="cat-icon" style="background:var(--orange)">📱</div>
+        <div class="cat-body"><div class="cat-title">SMS</div><div class="cat-desc">Delivery-critical only, by default</div></div>
+        <div class="cat-toggle"><label class="switch"><input type="checkbox"><span class="slider"></span></label></div>
+      </div>
+      <div class="cat-card">
+        <div class="cat-icon" style="background:var(--orange)">🔔</div>
+        <div class="cat-body"><div class="cat-title">Push notifications</div><div class="cat-desc">In-app deals &amp; reminders</div></div>
+        <div class="cat-toggle"><label class="switch"><input type="checkbox" checked><span class="slider"></span></label></div>
+      </div>
+    </div>
+    <div class="content" style="padding-top:0">
+      <button class="btn btn-primary" onclick="go('screen-saved')">Save preferences</button>
+    </div>
+  </div>
+
+  <!-- SCREEN 4: Saved confirmation (micro) -->
+  <div class="screen confirm" id="screen-saved">
+    <div class="check">✓</div>
+    <h2>Preferences saved</h2>
+    <p>You can revisit and change any of these anytime from your Privacy Dashboard.</p>
+    <button class="btn btn-primary" onclick="go('screen-dashboard')" style="width:100%">Go to Privacy Dashboard</button>
+  </div>
+
+  <!-- SCREEN 5: Privacy Dashboard -->
+  <div class="screen" id="screen-dashboard">
+    <div class="topbar"><button class="backbtn" onclick="go('screen-saved')">←</button><h1>Privacy Dashboard</h1></div>
+    <div class="content">
+      <div class="stat-row">
+        <div class="stat"><div class="v">2 / 3</div><div class="l">Optional categories on</div></div>
+        <div class="stat"><div class="v">Today</div><div class="l">Last updated</div></div>
+      </div>
+
+      <div class="dash-row" onclick="go('screen-consent')">
+        <div class="dash-row-left">
+          <div class="dash-icon" style="background:var(--teal)">🎛️</div>
+          <div><div class="dash-title">Consent preferences</div><div class="dash-sub">Personalisation, marketing, partner sharing</div></div>
+        </div>
+        <div class="chev">›</div>
+      </div>
+
+      <div class="dash-row" onclick="go('screen-rights')">
+        <div class="dash-row-left">
+          <div class="dash-icon" style="background:var(--navy)">📄</div>
+          <div><div class="dash-title">Your data &amp; rights</div><div class="dash-sub">Download, correct, or delete your data</div></div>
+        </div>
+        <div class="chev">›</div>
+      </div>
+
+      <div class="dash-row" onclick="go('screen-rights')">
+        <div class="dash-row-left">
+          <div class="dash-icon" style="background:var(--orange)">🕓</div>
+          <div><div class="dash-title">Activity log</div><div class="dash-sub">See when consent was given or changed</div></div>
+        </div>
+        <div class="chev">›</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 6: Data rights (Download / Delete) -->
+  <div class="screen" id="screen-rights">
+    <div class="topbar"><button class="backbtn" onclick="go('screen-dashboard')">←</button><h1>Your data &amp; rights</h1></div>
+    <div class="content">
+      <div class="rights-card">
+        <h3>📥 Download your data</h3>
+        <p>Get a copy of everything Instamart holds about you — orders, addresses, preferences — as a portable file.</p>
+        <button class="btn btn-outline-navy" onclick="go('screen-downloaded')">Request download</button>
+      </div>
+      <div class="danger-card">
+        <h3>🗑️ Delete your account &amp; data</h3>
+        <p>Permanently erase your personal data. Orders required for tax records are retained as required by law, then removed.</p>
+        <button class="btn btn-navy" style="background:#C24C1C" onclick="go('screen-delete-confirm')">Request deletion</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 7: Download confirmation -->
+  <div class="screen confirm" id="screen-downloaded">
+    <div class="check">✓</div>
+    <h2>Download on its way</h2>
+    <p>We're preparing your data export. You'll get a secure link by email within 48 hours, in line with DPDP timelines.</p>
+    <button class="btn btn-primary" onclick="go('screen-dashboard')" style="width:100%">Back to Dashboard</button>
+  </div>
+
+  <!-- SCREEN 8: Delete confirm step -->
+  <div class="screen" id="screen-delete-confirm">
+    <div class="topbar"><button class="backbtn" onclick="go('screen-rights')">←</button><h1>Confirm deletion</h1></div>
+    <div class="content">
+      <div class="danger-card" style="margin-bottom:16px">
+        <h3>This can't be undone</h3>
+        <p>Your profile, saved addresses, order history and preferences will be permanently deleted. This won't affect an order that's currently out for delivery.</p>
+      </div>
+      <button class="btn btn-navy" style="background:#C24C1C" onclick="go('screen-final')">Yes, delete my data</button>
+      <button class="btn btn-ghost" style="color:var(--slate); border-color:#D8DAE6" onclick="go('screen-rights')">Cancel</button>
+    </div>
+  </div>
+
+  <!-- SCREEN 9: Final confirmation -->
+  <div class="screen confirm" id="screen-final">
+    <div class="check">✓</div>
+    <h2>Deletion request received</h2>
+    <p>Your data will be erased within the timeline required by the DPDP Act. You'll get a confirmation email once it's complete.</p>
+    <button class="btn btn-primary" onclick="go('screen-welcome')" style="width:100%">Start over</button>
+  </div>
+
+</div>
+
+<div class="footer-note">Tap through: Welcome → Consent categories → Marketing channels → Dashboard → Data rights → Download / Delete</div>
+
+<script>
+  function go(id){
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    document.getElementById(id).scrollTop = 0;
+  }
+</script>
+</body>
+</html>
